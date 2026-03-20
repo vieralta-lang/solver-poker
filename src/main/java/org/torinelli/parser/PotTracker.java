@@ -38,6 +38,7 @@ public class PotTracker {
 
         long contribution = numbers.get(0);
         if ("calls".equals(normalizedAction) || "bets".equals(normalizedAction)) {
+            // pegue o investido na street e some o contribution, para garantir que o valor investido seja atualizado corretamente
             state.getStreetInvested().merge(playerName, contribution, Long::sum);
         }
         return contribution;

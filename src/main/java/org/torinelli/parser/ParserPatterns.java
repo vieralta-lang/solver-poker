@@ -62,4 +62,12 @@ public final class ParserPatterns {
     public static boolean isBoardStreet(String line) {
         return isFlop(line) || isTurn(line) || isRiver(line);
     }
+
+        public static boolean startsPreDealPlay(String line) {
+                return line.contains("posts the ante")
+                                || line.contains("posts small blind")
+                                || line.contains("posts big blind")
+                                || isHoleCards(line)
+                                || line.startsWith("Dealt to ");
+        }
 }

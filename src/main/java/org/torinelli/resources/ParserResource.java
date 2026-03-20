@@ -1,6 +1,7 @@
-package org.torinelli;
+package org.torinelli.resources;
 
 
+import org.torinelli.ParserCommand;
 import org.torinelli.api.dto.HandMetaDataResponse;
 import org.torinelli.domain.HandMetaData;
 
@@ -22,6 +23,6 @@ public class ParserResource {
     @Consumes(MediaType.TEXT_PLAIN)
     public HandMetaDataResponse getHand(String hand) {
         HandMetaData metaData = command.execute(hand);
-        return HandMetaDataResponse.fromDomain(metaData);
+        return HandMetaDataResponse.fromDomain(metaData, hand);
     }
 }

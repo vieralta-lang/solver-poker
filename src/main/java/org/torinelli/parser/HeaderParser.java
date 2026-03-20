@@ -16,7 +16,16 @@ public class HeaderParser {
         this.potTracker = potTracker;
     }
 
-    public void parsePreflopMeta(String line,
+    public void parsePreFlopMeta(String line,
+                              Map<String, Player> playerMap
+                              ) {
+
+        if (line.contains("Dealt to")) {
+            assignCards(playerMap, line);
+        }
+    }
+
+    public void parsePreDealMeta(String line,
                                  List<Player> players,
                                  Map<String, Player> playerMap,
                                  HandMetaData metaData,
@@ -33,11 +42,10 @@ public class HeaderParser {
             state.addToRunningPot(assignBlind(playerMap, line, "SB", state));
         } else if (line.contains("posts big blind")) {
             state.addToRunningPot(assignBlind(playerMap, line, "BB", state));
-        } else if (line.contains("Dealt to")) {
-            assignCards(playerMap, line);
         }
     }
 
+    // parseia as infos de cada jogador individualmente, como nome, número do assento e quantidade de fichas
     private void addPlayer(List<Player> players, Map<String, Player> playerMap, String line) {
         Matcher m = ParserPatterns.SEAT_PATTERN.matcher(line);
         if (!m.find()) {
@@ -64,9 +72,12 @@ public class HeaderParser {
         Player player = playerMap.get(name);
         if (player != null) {
             player.setHoleCards(cards);
+            player.setHero(true);
         }
     }
 
+
+    //parseia as infos de cabeçalho do hand, como id, torneio, level e blinds
     private void parseHeader(HandMetaData metaData, String line) {
         Matcher m = ParserPatterns.HEADER_PATTERN.matcher(line);
         if (!m.find()) {
@@ -81,6 +92,7 @@ public class HeaderParser {
         metaData.setBlind(new Blind(sb, bb));
     }
 
+    // parseia as infos da mesa, como nome, número máximo de jogadores e posição do botão
     private void parseTable(HandMetaData metaData, String line) {
         Matcher m = ParserPatterns.TABLE_PATTERN.matcher(line);
         if (!m.find()) {
@@ -95,7 +107,11 @@ public class HeaderParser {
     private long parseAnte(HandMetaData metaData, String line) {
         Matcher m = ParserPatterns.ANTE_PATTERN.matcher(line);
         if (m.find() && metaData.getAnte() == null) {
-            metaData.setAnte(String.valueOf(Integer.parseInt(m.group(2))));
+            long ante = Long.parseLong(m.group(2));
+            metaData.setAnte(String.valueOf(ante));
+            if (metaData.getBlind() != null) {
+                metaData.getBlind().setAnte(ante);
+            }
         }
 
         if (!m.find(0)) {

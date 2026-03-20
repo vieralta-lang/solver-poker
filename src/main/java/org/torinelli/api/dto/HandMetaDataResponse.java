@@ -1,19 +1,22 @@
 package org.torinelli.api.dto;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.torinelli.api.dto.replay.ReplayPlayerBaseResponse;
+import org.torinelli.api.dto.replay.ReplayResultResponse;
+import org.torinelli.api.dto.replay.ReplayResponse;
+import org.torinelli.api.dto.replay.ReplayResponseBuilder;
+import org.torinelli.api.dto.replay.ReplayTimelineFrameResponse;
 import org.torinelli.domain.Blind;
 import org.torinelli.domain.HandMetaData;
 import org.torinelli.domain.Seat;
-import org.torinelli.domain.Table;
-import org.torinelli.domain.enums.Street;
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class HandMetaDataResponse {
+    private static final ReplayResponseBuilder REPLAY_RESPONSE_BUILDER = new ReplayResponseBuilder();
+
     private final String handId;
     private final String tournamentId;
     private final String tableName;
@@ -21,16 +24,16 @@ public class HandMetaDataResponse {
     private final int buttonSeat;
     private final Blind blind;
     private final List<Seat> seats;
-    private final Table table;
     private final String gameType;
     private final String format;
     private final String level;
     private final String buyIn;
     private final String rake;
-    private final String ante;
-    private final Map<Street, Table> snapshot;
+    private final List<ReplayPlayerBaseResponse> players;
+    private final ReplayResultResponse result;
+    private final List<ReplayTimelineFrameResponse> timeline;
 
-    private HandMetaDataResponse(HandMetaData handMetaData) {
+    private HandMetaDataResponse(HandMetaData handMetaData, String rawHandText) {
         this.handId = handMetaData.getHandId();
         this.tournamentId = handMetaData.getTournamentId();
         this.tableName = handMetaData.getTableName();
@@ -38,21 +41,23 @@ public class HandMetaDataResponse {
         this.buttonSeat = handMetaData.getButtonSeat();
         this.blind = handMetaData.getBlind();
         this.seats = handMetaData.getSeats() == null ? new ArrayList<>() : new ArrayList<>(handMetaData.getSeats());
-        this.table = handMetaData.getTable();
         this.gameType = handMetaData.getGameType();
         this.format = handMetaData.getFormat();
         this.level = handMetaData.getLevel();
         this.buyIn = handMetaData.getBuyIn();
         this.rake = handMetaData.getRake();
-        this.ante = handMetaData.getAnte();
-        this.snapshot = new EnumMap<>(Street.class);
-        if (handMetaData.getSnapshot() != null) {
-            this.snapshot.putAll(handMetaData.getSnapshot());
-        }
+        ReplayResponse replay = REPLAY_RESPONSE_BUILDER.build(rawHandText, handMetaData);
+        this.players = replay.getPlayers();
+        this.result = replay.getResult();
+        this.timeline = replay.getTimeline();
     }
 
     public static HandMetaDataResponse fromDomain(HandMetaData handMetaData) {
-        return new HandMetaDataResponse(handMetaData);
+        return new HandMetaDataResponse(handMetaData, "");
+    }
+
+    public static HandMetaDataResponse fromDomain(HandMetaData handMetaData, String rawHandText) {
+        return new HandMetaDataResponse(handMetaData, rawHandText);
     }
 
     public String getHandId() {
@@ -83,10 +88,6 @@ public class HandMetaDataResponse {
         return seats;
     }
 
-    public Table getTable() {
-        return table;
-    }
-
     public String getGameType() {
         return gameType;
     }
@@ -107,12 +108,16 @@ public class HandMetaDataResponse {
         return rake;
     }
 
-    public String getAnte() {
-        return ante;
+    public List<ReplayPlayerBaseResponse> getPlayers() {
+        return players;
     }
 
-    public Map<Street, Table> getSnapshot() {
-        return snapshot;
+    public ReplayResultResponse getResult() {
+        return result;
+    }
+
+    public List<ReplayTimelineFrameResponse> getTimeline() {
+        return timeline;
     }
 
     @Override
@@ -131,16 +136,18 @@ public class HandMetaDataResponse {
         appendIfNotBlank(sb, "level", level);
         appendIfNotBlank(sb, "buyIn", buyIn);
         appendIfNotBlank(sb, "rake", rake);
-        appendIfNotBlank(sb, "ante", ante);
         if (!seats.isEmpty()) {
             sb.append(",\n  seatCount=").append(seats.size());
             sb.append(",\n  seats=").append(seats);
         }
-        if (table != null) {
-            sb.append(",\n  table=").append(table);
+        if (!players.isEmpty()) {
+            sb.append(",\n  players=").append(players.size());
         }
-        if (!snapshot.isEmpty()) {
-            sb.append(",\n  snapshot=").append(snapshot);
+        if (!timeline.isEmpty()) {
+            sb.append(",\n  timeline=").append(timeline.size());
+        }
+        if (result != null && !result.getWinners().isEmpty()) {
+            sb.append(",\n  winners=").append(result.getWinners().size());
         }
         sb.append("\n}");
         return sb.toString();

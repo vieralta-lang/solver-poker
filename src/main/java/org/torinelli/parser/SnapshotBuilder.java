@@ -16,10 +16,6 @@ public class SnapshotBuilder {
                              long potAtStreetStart,
                              long runningPot,
                              List<Player> players) {
-        if (street == Street.NONE) {
-            return;
-        }
-
         Table table = new Table();
         table.setCommunityCards(communityCards);
         table.setPotAtStreetStart(potAtStreetStart);
@@ -29,17 +25,14 @@ public class SnapshotBuilder {
         snapshot.put(street, table);
     }
 
-    public void saveInitialSnapshot(Map<Street, Table> snapshot,
-                                    String communityCards,
-                                    long runningPot,
-                                    List<Player> players) {
+    public void savePreDealSnapshot(Map<Street, Table> snapshot, List<Player> players) {
         Table table = new Table();
-        table.setCommunityCards(communityCards);
+        table.setCommunityCards("");
         table.setPotAtStreetStart(0L);
-        table.setStreetContribution(runningPot);
-        table.setTotalPot(runningPot);
+        table.setStreetContribution(0L);
+        table.setTotalPot(0L);
         table.setPlayers(clonePlayers(players));
-        snapshot.put(Street.NONE, table);
+        snapshot.put(Street.PRE_DEAL, table);
     }
 
     private List<Player> clonePlayers(List<Player> players) {
@@ -47,6 +40,7 @@ public class SnapshotBuilder {
         for (Player original : players) {
             Player copy = new Player(original.getName(), original.getChipStack(), original.getPosition(), original.getCards());
             copy.setSeatNumber(original.getSeatNumber());
+            copy.setHero(original.isHero());
             copy.setStatus(original.getStatus());
             if (original.getHoleCards() != null && !original.getHoleCards().isBlank()) {
                 copy.setHoleCards(original.getHoleCards());

@@ -10,6 +10,7 @@ import java.util.Map;
 public class Player {
     private String name;
     private long chipStack;
+    private boolean isHero;
     private String status;
     private List<Card> cards;
     private String position;
@@ -20,6 +21,7 @@ public class Player {
     public Player(String name, long chipStack, String position, List<Card> cards) {
         this.name = name;
         this.chipStack = chipStack;
+        this.isHero = false;
         this.status = "active";
         this.position = position;
         this.cards = cards == null ? new ArrayList<>() : new ArrayList<>(cards);
@@ -33,6 +35,7 @@ public class Player {
     public Player(String playerName, int seatNumber, long chips) {
         this.name = playerName;
         this.chipStack = chips;
+        this.isHero = false;
         this.status = "active";
         this.seatNumber = seatNumber;
         this.position = null;
@@ -93,6 +96,14 @@ public class Player {
     public long getChipStack() {
         return chipStack;
     }
+
+    public boolean isHero() {
+        return isHero;
+    }
+
+    public void setHero(boolean hero) {
+        isHero = hero;
+    }
     
     public void setChipStack(long chipStack) {
         this.chipStack = chipStack;
@@ -127,6 +138,7 @@ public class Player {
         StringBuilder sb = new StringBuilder("Player{");
         sb.append("name='").append(name).append('\'');
         sb.append(", chipStack=").append(chipStack);
+        sb.append(", isHero=").append(isHero);
         sb.append(", status='").append(status).append('\'');
         sb.append(", position='").append(position).append('\'');
         sb.append(", cards='").append(cards).append('\'');

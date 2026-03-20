@@ -1,0 +1,12 @@
+services:
+  solver-poker:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    image: solver-poker:jvm
+    container_name: solver-poker
+    ports:
+      - "8080:8080"
+    environment:
+      JAVA_OPTS_APPEND: "-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
+    restart: unless-stopped
